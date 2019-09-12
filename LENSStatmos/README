@@ -1,0 +1,49 @@
+This README file is both in the github code repository and also repeated in the Dropbox archive. In the github directory the R datasets are _not_ included because of their size. However, the R source and other parts are included to show how the data sets are created from the raw model output, netcdf files.
+
+
+Summary: 
+NCAR Large Ensemble (LENS) 10 members,  2006 - 2080 monthly means over the North American region.
+resolution is approximately 1 degree. Variables are surface temperature, rainfall, solar insolation, and surface wind speed.
+
+See
+
+http://www.cesm.ucar.edu/projects/community-projects/LENS/data-sets.html
+
+
+
+To be specific about what has been used here, all the netcdf files downloaded for this work have the prefix:
+
+b.e11.BRCP85C5CNBDRD.f09_g16.030.cam.h0
+
+E.g first member of surface temperature has the name 
+b.e11.BRCP85C5CNBDRD.f09_g16.001.cam.h0.TS.200601-208012.nc
+And is about 109Mb in size. 
+
+
+To use a data set in R
+
+load("LENSStatmosPRECL.rda")
+This will be a single list with the field comonent being a four dimensional array:
+ ( lon, lat, time, ensemble member )
+
+Common files:
+
+> README
+> Plot checking TS variable                          STATMOSCheckTS.pdf
+> Script generating each of these four datasets      makeSTATMOSExamples.R
+> R function that does the extraction and formatting subsetLENS.R
+
+
+The big binaries only in Dropbox archive:
+
+For a public link to this directory:
+
+https://www.dropbox.com/sh/dcvvryztpla245o/AAAKdO0A--R4nHJwsAk8Zu1ya?dl=0
+ 
+
+ Surface Temperature        149M Aug 25 14:09 LENSStatmosTS.rda
+ Large scale Precipitation  186M Aug 25 14:10 LENSStatmosPRECL.rda
+ Solar Insolation           152M Aug 25 14:11 LENSStatmosSOLIN.rda
+ 10 Meter WInd Speed        178M Aug 25 14:12 LENSStatmosU10.rda
+
+

@@ -1,0 +1,469 @@
+\documentclass[bgimage]{/Users/nychka/Dropbox/Home/Tex/pfuef/pfuef}  
+\usepackage{verbatim}
+\nofiles
+% dehyrdrated personal version of  talkpfuef.tex from Example2
+% this version should work anywhere on laptop
+  \figuredir{/Users/nychka/Dropbox/Home/Tex/pfuef/p5figures/}
+  \input{/Users/nychka/Dropbox/Home/Tex/ColorsFromR.tex}
+  \setcolortc[black]{black}
+  \footer3 
+  \header0
+  \sethfmargins{0in}{\paperwidth-1.6in}{1.6in}{0in}{2.3in}
+  \settextmargins{.75in}{.5in}{.5in}{.25in}{.1in}
+  \setcolortc{black}
+  \setcolorec{darkred}
+  \headertextcolor{midnightblue}
+  \footertextcolor{black}
+
+  \footertext{ { \tiny
+  \includegraphics[width=.25in]{/Users/nychka/Dropbox/Home/Tex/MinesTriangle.pdf}     D. Nychka   {\it Global and local}  }     }
+  
+  \input{/Users/nychka/Dropbox/Home/Tex/NychkaStuff.tex}
+ 
+ \def\MyHeading#1{{\color{red4}{\LARGE #1}\\}}
+ \def\MyComment#1{{\color{blue4}{\it  {\LARGE #1}}\\}}
+ \def\Mycomment#1{{\color{midnightblue}{\it  {\large #1}}}}
+ \def\Myheading#1{{\color{black}{\it  \bf {\large  #1}}}}
+ \footer0 % no footer on first slide
+ 
+ \begin{document}
+ \backgroundimage{sky2.jpg}
+\slide{}
+\vspace*{-.5in}
+{ \Huge
+Nonstationary spatial data: \\
+ think globally act locally
+ } 
+%
+\\ \\
+%
+{\color{black}
+{\Large  Douglas Nychka}, \\
+Colorado School of Mines  (CSM) \\
+National Center for Atmospheic Research
+} 
+\\ \\
+\hspace*{.75in}
+\includegraphics[height=4in]{/Users/nychka/Dropbox/Home/Tex/pfuef/p5figures/BearPk.jpg}
+%\includegraphics[width=8in]{/Users/nychka/Dropbox/Home/Current_talks/AGUExtremes/BoulderRoof.JPG}
+% \includegraphics[width=8in]{/Users/nychka/Dropbox/Home/Current_talks/AGUExtremes/palms.jpg}
+\\
+\\
+\colorbox{grey90}{
+\begin{minipage}{ 10in} {\normalsize \it
+% \includegraphics[width=.45in]{/Users/nychka/Dropbox/Home/Tex/NSFLogo.jpg}   National Science Foundation  \hfill {\it 
+%August 2019 }
+\includegraphics[width=.45in]{/Users/nychka/Dropbox/Home/Tex/MinesTriangle.pdf}  Colorado School of Mines  \hfill {\it 
+ JSM Denver August 2019 }
+}
+\end{minipage}
+}
+
+% end  text color 
+\clearpage \setcounter{page}{1}
+% start footers 
+  \footer3
+% beginning of first real slide.   
+\slide{Summary}
+\begin{ilist}
+\item NCAR Large Ensemble        
+\item Nonstationary Gaussian fields 
+\item Estimating the covariance 
+\item Emulating climate fields
+\end{ilist}
+ 
+\Myheading{Challenges:}   \\
+Building covariance models for large problems and actually computing the beasts!
+\slide{Credits}
+
+\bdot SAR: 
+Ashton Wiens (CU), Mitchell Krock (CU), Dorit Hammerling (CSM) William Kleiber (CU)\\
+ 
+\bdot Parallel computation: Florian Gerber (CSM) 
+
+\bdot Climate Model Experiements: Claudia Tebaldi (PNNL)  Stacey Alexeeff (Kaiser) 
+
+\slide{PART 1}
+{\huge Spatial problems in climate science}
+\\
+
+%\includegraphics[ width=3in]{Doors/IMG_1079.jpg}
+
+
+  
+\slide{Future climate}
+\Mycomment{CESM Large Ensemble (CESM-LENS)}
+ A  30+ member  ensemble of CESM simulations that have been designed to study the local effects of climate change \\
+ 
+ The range of ensemble members characterize some of the uncertainty due to natural variability in the Earth system
+ 
+ 
+ \bdot  $ \approx 1^{\circ} $ spatial  resolution -- about 55K locations  
+ 
+ \bdot  Simulation period 1920 - 2080 
+ 
+ \bdot  Using RCP 8.5 after 2005  
+ 
+ \slide{Simulated JJA Temperature}
+ 
+ Grid box around Boulder/Denver -- average summer temperature. 
+ 
+%\includegraphics[width=4in]{ /Users/nychka/Home/Projects/BRACEData/pix/BoulderEx1A.pdf}
+\includegraphics[width=4in]{/Users/nychka/Home/Projects/BRACEData/pix/BoulderEx1A.pdf}
+\ 
+\includegraphics[width=4in]{/Users/nychka/Home/Projects/BRACEData/pix/BoulderEx1B.pdf}
+
+\slide{First and second ensemble member}
+\includegraphics[width=4in]{/Users/nychka/Home/Projects/BRACEData/pix/BoulderEx2B.pdf}
+
+\Mycomment{We have 30 of these and at 50K+ gird boxes -- and this is just surface temperature!}
+
+\slide{Mean scaling pattern}
+\MyComment{OLS slopes across 30 CESM-LENS \\  members for JJA} \\
+%
+\includegraphics[width=7in]{/Users/nychka/Dropbox/Home/Projects.OLD/BRACEspatialYS/pix/figMean.png}
+\\
+ E. g. value of {\color{red3} 2.5} means: a $1^{\circ}$ global increase  implies $2.5^{\circ}$ increase locally.   
+     
+\Mycomment{This allows us to determine the local temperature change
+  based on a simpler model for the global average temperature}
+  
+ \slide{Individual patterns}
+ \begin{minipage}[t]{3in}
+ \vspace{0in}
+ Ensemble mean  \\
+ \includegraphics[width=3in]{/Users/nychka/Dropbox/Home/Projects.OLD/BRACEspatialYS/pix/figMean.png}
+ \end{minipage}
+ \begin{minipage}[t]{7in}
+ \vspace{0in}
+ First 8  out of 30 {\it centered} ensemble members \\
+\includegraphics[width=5in]{/Users/nychka/Dropbox/Home/Projects.OLD/BRACEspatialYS/pix/figUfield.pdf}  \\
+  \end{minipage}
+  \\
+\Mycomment{Goal:} 
+ Simulate additional fields efficiently that match the spatial dependence in this 30 member ensemble. 
+ \\
+ \\ \hspace*{1in} {\it Build a statistical emulator of this part of the model.}
+ 
+\slide{}
+{\huge  PART 2 \\ 
+Nonstationary Gaussian Processes}
+\\ \\
+
+%\includegraphics[width=3in]{Doors/IMG_0420.jpg}
+
+
+\slide{Gaussian process models}
+$u(\bbs )$ value of the field at location $\bbs $. 
+
+\bdot $E[ u(\bbs ) ] =0 $  and  $C( \bbs _1, \bbs _2) = E[ u(\bbs _1)u(\bbs _2) ]$ 
+
+\bdot A covariance  that  is stationary and isotropic:  
+\[C( \bbs _1, \bbs _2) =  \sigma^2  \cM( \kappa || \bbs _1 - \bbs _2 || ).\]
+ -- a strong assumption, note two covariance parameters $\sigma$ and $\kappa$. 
+ 
+%--  $\cM(d)$ is Exponential  with smoothness $1/2$. 
+\bdot Anisotropy: ${\color{magenta} A}$ a linear tranformation :  
+\[C( \bbs _1, \bbs _2) =  \sigma^2  \cM( || {\color{magenta} A} (\bbs _1 - \bbs _2) || ) .\]
+ $ {\color{magenta} A}$ is a linear rotation and scaling of the coordinates 
+ 
+\slide{Nonstationary covariance functions}
+\bdot Convolution model (Higdon, Fuentes) \\
+
+Represent the process first, then figure out the covariance function 
+
+\[ u(\bbs) = \int_{\Re^2} \Psi( \bbs, \bbs^*) dW(\bbs^*)  \]
+$dW(\bbu)$ a two dimensional standard, white noise process. 
+
+The covariance function:
+\[ C(\bbs _1,\bbs _2)  =   \int _{\Re^2} \Psi( \bbs _1 , \bbs^*)\Psi( \bbs _2 , \bbs^*)
+d\bbs^* \]
+
+\bdot $\Psi$ can be the Green's function for a stochastic PDE \\  
+ \hspace*{.5in} -- a connection to INLA
+
+
+\slide{}
+\Mycomment{ 2-D exponential kernel example}:
+\[ \Psi( \bbs, \bbs^*)= \sigma(\bbs) e^{- \kappa(\bbs) \| \bbs - \bbs^* \| } \]
+
+\[ C(\bbs _1,\bbs _2) =
+  \sigma(\bbs_1)\sigma(\bbs_2) \int 
+e^{-\kappa(\bbs)|| \bbs _1 - \bbs^*|| }
+e^{-\kappa(\bbs^*)||  \bbs _2 - \bbs^* || }
+d\bbs^* \]
+
+\bdot If $\theta(\bbs ) \equiv \theta$ in 2-d this gives a  Mat\'{e}rn  with smoothness $\nu =1.0$
+
+\bdot $C$ is positive definite because it is built from the process description. 
+
+\bdot For unequal $\kappa$ no simple closed form for this covariance. \\
+\hspace*{.5in}  --direct use  of covariance is not feasible for large problems
+
+\slide{}
+\Mycomment{ Ansiotropy}: \\
+ \hspace*{.5in} ${\color{magenta} A}$ =  diagonal $ \times $ rotation .
+
+\[ \Psi( \bbs, \bbu)= \sigma  e^{-|| { \color{magenta} A} (\bbs-  \bbu) ||} \]
+
+\Mycomment{Nonstationarity}:  $ { \color{magenta} A(\bbs) }$ varies in space. 
+ 
+\[  \Psi( \bbs, \bbs^*)= \sigma(\bbs) e^{-|| {\color{magenta}  A(\bbs) } (\bbs -   \bbs^*)||}  \]
+
+
+
+\slide{Our approach}
+\bdot Represent the process in terms of a differential operator
+
+\bdot Discretize the problem to give sparse matrices. 
+
+\slide{Stochastic partial differential equations}
+
+Let    $\Psi$ can be the Green's function for a stochastic PDE with operator $\cL$. 
+I.e. 
+\[ u(\bbs) = \int_{\Re^2} \Psi( \bbs, \bbu) d{W}(\bbu)  \]
+is equivalent to 
+\[ \cL ( u(\bbs)) = {dW}(\mathbf s) \]
+
+An SPDE model ( Lindgren and Rue)  for $u$   ( $\alpha =2$ ) 
+
+\[ ( \kappa^2  -  \nabla \cdot \nabla) u(\bbs)   = {dW}(\mathbf s) \]
+$\Delta u=\frac{\partial ^2}{\partial s_1 ^2} u + \frac{\partial ^2}{\partial s_2 ^2} u  \equiv  \nabla \cdot \nabla u$ 
+
+This gives a process that is Mat\'ern, range $\kappa$ and smoothness 1. 
+
+\slide{Discretizing}
+$u_{i,j}$ now the process on a unit lattice
+
+$ \frac{\partial ^2}{\partial s_1 ^2} u + \frac{\partial ^2}{\partial s_2 ^2} u $
+is approximated by differences
+
+\[ \frac{\partial ^2}{\partial s_1 ^2} u  \approx    (u_{i+1,j} -  u_{i,j})  -  (u_{i,j}  -  u_{i-1,j})  =  u_{i+1,j} - 2 u_{i,j}  + u_{i-1,j}  \] 
+
+The full  discretization of the SPDE 
+\[ (\kappa^2 -  \Delta) u(\bbs)   = {dW}(\mathbf s) \]
+
+$ \kappa^2u(\bbs)   -  {\color{magenta} \frac{\partial ^2}{\partial s_1 ^2} u(\bbs)} \hspace{2in}  -  {\color{magenta}\frac{\partial ^2}{\partial s_2 ^2} u(\bbs) } \hspace{2in} = {dW}(\mathbf s) $
+
+$ \kappa^2u_{i,j} -   {\color{magenta} (u_{i+1,j} - 2 u_{i,j}  + u_{i-1,j} )} -   {\color{magenta}(u_{i,j+1} - 2 u_{i,j}  + u_{i,j})}   = e_{i,j} $
+
+$\kappa^2u_{i,j} + 4u_{i,j} {\color{blue}  -u_{i+1,j} - u_{i-1,j} -u_{i,j+1} - u_{i,j-1}} = e_{i,j} $ 
+
+$[ \kappa^2+ 4 ]u_{i,j}  {\color{blue}  -u_{i+1,j} - u_{i-1,j} -u_{i,j+1} - u_{i,j-1}} = e_{i,j} $ 
+
+\slide{A Spatial Autoregression (SAR)}
+\begin{minipage}{5in}
+ \Mycomment{Gridded field of $\bbu$:  } \\
+ {\large
+   \begin{tabular}{ccccc}
+ .&.&.& .&.\\
+.&. & $u_1$ & . &.\\
+.&$u_2$ &  {\color{black} $u_*$} & $u_3$&. \\
+.&.& $u_ 4$ & . &. \\ 
+ .&.&.&.&.\\
+\end{tabular}
+}
+\end{minipage}
+\
+\begin{minipage}{5in}
+ \Mycomment{SAR weights:  } \\
+ {\large
+   \begin{tabular}{c|c|c|c|c}
+ .&.&.& .&.\\ \hline
+.&. & {\color{blue1} -1}  & . &.\\ \hline
+.& {\color{blue1} -1} &  $\kappa^2 + 4 $   & {\color{blue1} -1}&. \\ \hline
+.&.& {\color{blue1} -1} & . &. \\ \hline
+ .&.&.&.&.\\
+\end{tabular}
+}
+\end{minipage}
+ 
+\Mycomment{ The SAR:}   
+ {\[ { \color{black}  (\kappa^2 + 4)} u_*   -  
+                                     \left( u_1 + u_2 + u_3 + u_4 \right)  
+                                      = \mbox{white noise} \]                           
+\bdot ${\color{black} \kappa}$  is not exactly equal to the continuous range.    
+%\hspace*{1in}  $1/\sqrt{a(\bbx) - 4}$  -- an approximate range parameter
+\\
+\bdot  $B \bbu =  \mbox{i.i.d.} N(0,1) $     where B is a sparse matrix 
+\\
+\bdot Covariance matrix  for $\bbu$ is  $ (B^{-1} B^{-T}  )  $  
+
+\bdot A SAR is a CAR with  precision  $B^T B $
+
+%$Q$ known as the precision or information matrix. 
+
+\slide{Key ideas}
+
+{\Large
+$B \bbu  =  \mbox{i.i.d.} N(0,1) $     
+}
+
+\bdot Sparsity in $B$ facilitates computation for large problems
+
+\bdot Coefficients of $B$ can vary row by row (i.e. lattice point by lattice point) to represent nonstationarity
+
+\bdot   $ \bbu = B^{-1} \bbe    $  , a discretized version of a convolution process. 
+
+$B^{-1}$ plays the role of $\Psi$ in $ u(\bbs) = \int_{\Re^2} \Psi( \bbs, \bbs^*) dW(\bbs^*)  $ 
+
+\bdot   $  B \bbu  $  , transforms the field (possibly observations) to white noise 
+
+$B$ plays the role of $\cL$ in  $\cL u = dW$
+
+
+
+
+\begin{comment}
+
+\slide{Nonstationary and anisotropic}
+
+
+
+\[ (1/ \theta^2 - \nabla \cdot H \nabla) u(\mathbf s) = dW(\mathbf s) \]
+
+Identifying  $H= A^TA$  the  field  $u*$  is the result of transforming the coordinates of an isotropic field according to $A$.
+\slide{Discretized SAR weights}
+\bdot Key idea is to allow these weights to vary for each lattice point. 
+
+\bdot $H = AA^T$. \\
+ $A$ :  scale  each coordiante and then rotate the coordinate axes  
+ \end{comment}
+ 
+\slide{The Anisotropic  Stencil}
+For a single lattice point ( Flugstadt, et al. ) 
+\[
+     \arraycolsep=6.0pt\def\arraystretch{2.5}
+   \begin{array}{c|c|c|c|c}
+   .&.&.&.&.\\ \hline
+      .&2H_{12} & -H_{22} & -{2H_{12}}&. \\
+        \hline
+     .&-H_{11} & \;\; \kappa^2 + 2H_{11}+ 2H_{22} \;\; & - H_{11}&. \\
+      \hline
+     .&-2H_{12} & - H_{22}& 2H_{12} &.\\
+     \hline
+      .&.&.&.&. 
+    \end{array} 
+\]
+
+\bdot $H = {\color{magenta} A}{\color{magenta} A^T}$ 
+
+\bdot Key idea is to allow these weights to vary for each lattice point. 
+
+\slide{}
+{\huge PART 3  Fitting the model} \\
+\\
+\\
+%\includegraphics[width=3in]{Doors/IMG_1075.jpg}
+\slide{}
+\Mycomment{Local Likelihoods}
+
+\bdot Estimate ${\color{magenta} A}$ in local windows for a Mat\'ern smoothness $1$.
+
+\bdot Translate this covariance model into the SAR form.
+
+\Mycomment{What is new?}
+
+\bdot  Quantified the accuracy of {\it local} Mat\'ern estimates based on replicates.
+
+\bdot  Established the translation from local covariance estimates into a global SAR model. 
+
+\slide{Climate model patterns}
+Local Mat\'{e}rn MLEs  for the 30 member ensemble patterns 
+
+Sill variance  \hspace{.5in} Nugget variance \hspace{.5in }  $1/\sqrt{\kappa_1 \kappa_2}$   \hspace{.75in} Orientation \\
+\includegraphics[width=10in, height=3.5in]{pix/Estimates.png}
+
+
+\slide{}
+{\huge PART 4 \\ \\
+Simulation and checking
+}
+\\
+%\includegraphics[width=3in]{Doors/IMG_0717.jpg}
+
+\slide{Some realizations of the process}
+
+\Mycomment{Top}  four ensemble members from  LENS climate model experiment. \\
+\\
+\includegraphics[width=8in]{/Users/nychka/Dropbox/Home/Current_Ms/NonStationaryLocal/nonstationarymodeling/plots/Simulations.png}
+\\
+\Mycomment{Bottom}  four realizations from SAR model. 
+
+\slide{Transforming to white noise}
+Applying the $B$ SAR operator to the first ensemble member
+
+%ORIGINAL FIELD ....   \hspace{1in}  
+\includegraphics[width=8in]{/Users/nychka/Home/Repositories/NonstationaryCovariances/Manuscripts/plots/Decorr0.png}
+\slide{What is next?}
+%\includegraphics[]{../../Repositories/NonstationaryCovariances/Manuscripts/plots/Decorr.png}
+
+\bdot Combine SAR approximation with basis functions for unequally spaced observations
+
+\bdot Improve approximation adding  processes at different scale levels. 
+
+\bdot Improve whitening transformation. 
+
+\bdot Land verses Ocean ?
+{\tiny
+\[
+     \arraycolsep=6.0pt\def\arraystretch{2.5}
+   \begin{array}{c|c|c|c|c}
+   .&.&.&.&.\\ \hline
+      .&2H_{12} & {\color{red4} -H_{22}} &  {\color{red4} -{2H_{12}}}&. \\
+        \hline
+     .&-H_{11} & \;\; \kappa^2 + 2H_{11}+  {\color{red4} 2H_{22} }\;\; &  {\color{red4} - H_{11}}&. \\
+      \hline
+     .&-2H_{12} & - H_{22}& 2H_{12} &.\\
+     \hline
+      .&.&.&.&. 
+    \end{array} 
+\]
+}
+
+\slide{}
+\Myheading{Software} \\
+\bdot  {\tt fields} R package, Nychka et al. (2000 - present)\\
+\bdot {\tt LatticeKrig} R package, Nychka et al. (2014- present) \\
+\bdot {\tt HPC4Stats}  SAMSI short course August 2017, Nychka, Hammerling and Lenssen.\\
+
+\slide{Background reading}
+ Nychka,D.,   Hammerling, D. ,  Krock, M.   Wiens, A. (2017).
+Modeling and emulation of nonstationary Gaussian fields. \\
+{\it arXiv:1711.08077}
+
+ Kuusela , M and Stein M. (2017).
+ Locally stationary spatio-temporal interpolation of Argo profiling float data \\
+ {\it arXiv:1711.00460v2}
+ 
+{
+ Alexeeff, S. E., Nychka, D., Sain, S. R., \& Tebaldi, C. (2016).\\
+ Emulating mean patterns and variability of temperature across and within scenarios in anthropogenic climate change experiments. \\
+  {\it Climatic Change}, 1-15. 
+ 
+Nychka, D., Bandyopadhyay, S., Hammerling, D., Lindgren, F., \& Sain, S. (2015). 
+A multi-resolution Gaussian process model for the analysis of large spatial datasets. \\
+ {\it Journal of Computational and Graphical Statistics}, 24(2), 579-599.
+} 
+
+%Summer 2017 interns \\
+%\includegraphics[width=4in]{pix/summerInterns.JPG} 
+
+\slide{Thank you!}
+
+\vfill % this pushes what follows right to bottom margin
+\includegraphics[height=3in]{/Users/nychka/Dropbox/Home/Tex/BoulderDI01532.jpg} 
+%\includegraphics[width=8in]{/Users/nychka/Dropbox/Home/Current_talks/BRACE/pix/Cheyenne.jpg}
+\
+
+\
+
+\
+%  without adding the  blank line image over lays the footer!
+---------------------------------------------------------------------
+% End of presentation.
+%----------------------------------------------------------------------
+
+
+\end{document}
+
