@@ -1,3 +1,5 @@
+library(fields)
+
 # parameters for the analysis
 startYear <- 1980
 endYear   <- 2016
