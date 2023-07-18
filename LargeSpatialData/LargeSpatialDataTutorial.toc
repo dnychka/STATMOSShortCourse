@@ -1,0 +1,7 @@
+\babel@toc {english}{}\relax 
+\beamer@sectionintoc {1}{Review of Kriging and timing}{5}{0}{1}
+\beamer@sectionintoc {2}{Basis functions}{13}{0}{2}
+\beamer@sectionintoc {3}{Fixed Rank Kriging}{19}{0}{3}
+\beamer@sectionintoc {4}{Spatial Autoregressions}{25}{0}{4}
+\beamer@sectionintoc {5}{LatticeKrig Model and Package}{29}{0}{5}
+\beamer@sectionintoc {6}{Summary}{33}{0}{6}

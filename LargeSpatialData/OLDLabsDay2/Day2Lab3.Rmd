@@ -1,0 +1,103 @@
+---
+title: "Day 2 Lab  Part III "
+subtitle: "ISI Short Course | June 1-3"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width=5, fig.height=5, fig.align = "center")
+suppressMessages(library( LatticeKrig))
+```
+
+# create a 1D SAR weight matrix 
+Use a handy LatticeKrig function to do it. Note diagonal value muxst be greater than 2.    
+
+```{r} 
+B<- LKDiag( c( -1, 3,-1), 10, full=TRUE)
+print( B)
+```
+
+Now find precision matrix and the covariance matrix. The shapes are close to double exponential.
+ 
+```{r} 
+fields.style()
+Q<- t( B) %*% B
+print( Q)
+Omega<- solve( Q)
+matplot( 1:10, Omega, type="l", col=1:2, lty=1:2)
+title("Slices of the covariance matrix")
+
+```
+
+ 
+Now use LatticeKrig utilites to look at  some MRFs in 2D.
+This is for a  20X20 lattice. 
+**NC.buffer=0**  below means no extra grid points are added at the edges. 
+
+```{r}
+
+sDomain<- cbind( c(0,1), c( 0,1))
+LKinfo<- LKrigSetup( sDomain, NC= 20, NC.buffer=0,  nlevel=1, a.wght=4.1) 
+Qsparse<- LKrig.precision(LKinfo)
+Q<- spam2full( Qsparse)
+# check 
+dim( Q)
+# pull off row 155 and reshape to an image. 
+image.plot( matrix( Q[,155], 20,20))
+Omega<- solve( Q)
+image.plot( matrix( Omega[,155], 20,20))
+title("Covariance of  the lattice with central point")
+```
+
+## Simulate some MRFs 
+How about 4? Note that the coefficient fields are  big vectors. Have to reshape to look at them. 
+
+```{r}
+set.seed(123)
+look <-  LKrig.sim( LKinfo=LKinfo, M=4 ,just.coefficients=TRUE )
+# take a look 
+set.panel( 2,2)
+par( mar=c( 1,1,1,1), oma=c( 0,0,0,4))
+zr<- range( c( look))
+for ( k in 1:4){
+  image( matrix( look[,k], 20,20), axes=FALSE,
+              xlab="", ylab="", zlim= zr,
+         col=viridis(256))
+}
+par( oma=c( 0,0,0,1))
+image.plot( legend.only=TRUE, col=viridis(256), zlim=zr)
+```
+
+## Exercises
+
+1.  How does the covariance at the 155 location change when **a.wght=4.01** ?
+How about **a.wght=10**?
+
+2. Take a look at the process variances  ( **diag( Omega)**)
+
+```{r}
+image.plot( 1:20, 1:20, matrix( diag( Omega),20,20))
+```
+You can see some edge effects. 
+
+How many rows and columns of the lattice should you ignore so that the variances are approximately constant? Say within about 90%? The LatticeKrig default is 5 on each side. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

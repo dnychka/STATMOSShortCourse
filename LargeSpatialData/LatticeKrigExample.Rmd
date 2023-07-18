@@ -1,0 +1,123 @@
+---
+title: "LatticeKrigExample"
+author: "Doug Nychka"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(LatticeKrig)
+data(CO2)
+```
+
+# Introduction
+This is a short example of using the LatticeKrig package to fit a large spatial data set and to compare timing with the standard method. 
+
+##  CO2 satelite data 
+Load the raw datra and plot. This is about 26K locations irregularly sampled
+
+```{r}
+s<- CO2$lon.lat
+z<- CO2$y
+dim( s)
+bubblePlot( s,z, highlight=FALSE, size=.4)
+world( add=TRUE, col="magenta")
+```
+
+## Subset using **spatialProcess** 
+Small subset that runs quickly using the standard spatial statistics model. 
+A thin plate spline type covariance is used that does not require a range parameter 
+
+Subset of ~ 1900 locations over the US. 
+```{r}
+# 1884 locations
+ind2<- which(
+       s[,1]>= -120 & s[,1] <= -60 &
+       s[,2]>=  -10 & s[,2] <=  55
+        )
+
+system.time(
+  fit2<- spatialProcess(s[ind2,], z[ind2], cov.function="Tps.cov" )
+)
+```
+
+For n=1884 get about 7 seconds a conservative  lower bound for the full data set is at least 3
+hours based on a timing of 35 seconds for  n= 3800 and then scaling up to 26000 based on cubic order complexity. 
+
+
+The fitted surface for this subset
+```{r}
+
+surface( fit2)
+world( add=TRUE, col="magenta")
+title("subset of CO2 data")
+```
+
+To get more control over the prediction one can specify the grid and 
+
+## LatticeKrig fit 
+
+Use the default in the function but set the equivalent of the range parameter to be large. This approximates a thin plate spline model. 
+
+```{r}
+system.time(
+  fit4<- LatticeKrig(s, z, a.wght = 4.01 )
+)
+# for ~27K locations get about  35 seconds
+```
+
+Summarize the fit. Note that the $\sigma^2$ and $\tau^2$ can be interpreted in the usual way as process and nugget variances. 
+
+```{r}
+# summary of fit
+fit4
+```
+
+Examine the global, fitted surface. 
+
+```{r}
+surface( fit4)
+world( add=TRUE, col="magenta")
+```
+
+Now fit a more accurate model that uses basis functions defined foa spherical geometry. 
+(See lattice figure in the lecture showing points generated from subdividing an isohedron.  )
+
+```{r}
+# same mulitresolution weights as the 2D  defaults 
+alpha<- fit4$LKinfo$alpha
+LKinfo<- LKrigSetup( s, startingLevel=3 , nlevel=3,
+                                              a.wght=1.05,
+                          alpha=alpha,
+                                              LKGeometry="LKSphere" )
+```
+
+List  out the model specification
+```{r}
+LKinfo
+```
+
+Now fit this model. It takes about 4 times longer because the spherical basis functions are not as efficient to work. For example the nodes are not on a regular grid. 
+```{r}
+ system.time(
+  fit5<- LatticeKrig(s, z, LKinfo=LKinfo)
+ )
+```
+
+Examine the surface as use this to show how to get the predited surface. 
+
+```{r}
+  fHat<- predictSurface( fit4, nx=200, ny=100)
+  imagePlot( fHat, col=viridis( 256))
+  contour( fHat, add=TRUE, col="white")
+  world( add=TRUE, col="magenta")
+ 
+```
+
+## On your own
+
+1. How different are the fits using the usual 2D model and the spherical one?
+  
+2. Do you see any edge effect in fit4 because it does not join the right boundary with left one? 
+

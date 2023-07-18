@@ -1,0 +1,689 @@
+\documentclass[english]{beamer} %,handout
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{verbatim}
+\usepackage[framemethod=TikZ]{mdframed}
+
+\makeatletter
+
+\usepackage{listings}
+\usetheme{Boadilla}
+\usecolortheme{spruce}
+%\usefont{serif}
+
+%\usetheme{default}
+
+\setbeamercovered{transparent}
+\setbeamertemplate{navigation symbols}{}
+
+%\usecolortheme{purdue}
+
+\usepackage{babel}
+\usepackage{color}
+\input{OurDefinitions}
+\input{ColorsFromR}
+%\setbeamercolor{itemize item}{fg=green4}
+\setbeamertemplate{itemize item}{\color{green4}$\bullet$ }
+
+ \def\MyHeading#1{{\color{red4}{\LARGE #1}\\}}
+ \def\MyComment#1{{\color{blue4}{\it  {\LARGE #1}}\\}}
+ \def\Mycomment#1{{\color{midnightblue}{\it  {\large #1}}}}
+ \def\Myheading#1{{\color{black}{\it  \bf {\large  #1}}}}
+ \def\Myspace{{\vspace*{.125in}}}
+
+\begin{document}
+
+\title[Large Spatial Data]{Challenges in Spatial Statistics: Large Data}
+\author{Douglas Nychka}
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+  {\Large 
+  {\it Challenges in Spatial Statistics: Large Data}  \\
+  Douglas Nychka,  Colorado School of Mines \\ 
+  }
+  \date{}
+  \ \\
+  \includegraphics[width=3.5in]{../../../../../Images/MinesZion0.jpg} 
+ %\includegraphics[width=2.5in]{Mines.jpeg}
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{Instructor: Douglas Nychka}
+\begin{minipage}{2.5in}
+    \begin{itemize}
+        \item  Professor at Mines, Director of the Data Science Program \vskip1em
+        \item Ph.D., University of Wisconsin, Statistics, 1983 \vskip1em
+        \item Focus: Curve and surface fitting, statistical computing \vskip1em
+        \item Fellow ASA, IMS \vskip1em
+        \item Senior Scientist Emeritus, National Center for Atmospheric Research
+        \item Developer of the {\tt fields} and {\tt LatticeKrig} R  Packages
+    \end{itemize}
+\end{minipage}
+\begin{minipage}{2in}
+\centering
+    \includegraphics[height = 1.8in]{NychkaTrees.jpeg}
+\end{minipage}
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{Outline of the workshop}
+\begin{itemize}
+\item Module  1:  Large spatial data
+\vskip2em
+\item Module 2: Multivariate Spatial Data 
+\vskip2em
+\item Module 3: Dynamical models over space and time
+\end{itemize}
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{Outline}
+
+Sections:
+\begin{itemize}
+\item   Large spatial data and linear algebra
+\item  Representing curves with basis functions
+\item  Fixed rank Kriging
+\item  Spatial Autoregressions (SAR)
+\item  LatticeKrig 
+
+%\tableofcontents
+
+\end{itemize}
+
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+  
+\section{Review of Kriging and timing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{}
+{\huge Part 1 Large spatial data and linear algebra}
+\Myspace
+
+\includegraphics[width=1.5in]{pix/Andre_Cholesky.jpg} \ \includegraphics[width=1.25in]{../../../Current_talks/LKrigTalk/pix/DKrige.jpg} \\
+A. Cholesky \hspace{1in} D. Krige
+
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{Recap of Kriging}
+\begin{minipage}{3.5in}
+\begin{itemize}
+\item{\color{blue}\textbf{Recall:}}
+$$
+\begin{bmatrix}
+\vspace*{0in}
+\mathbf{X_1}\\
+\cdots\\
+\mathbf{X_2}
+\end{bmatrix}
+\sim
+MN\left(
+\overbrace{\begin{bmatrix}
+\boldsymbol{\mu_1}\\
+\cdots\\
+\boldsymbol{\mu_2}
+\end{bmatrix}}^{\boldsymbol{\mu}},
+\overbrace{\begin{bmatrix}
+\boldsymbol{\Sigma_{11}} & \boldsymbol{\Sigma_{12}}\\
+\boldsymbol{\Sigma_{21}} & \boldsymbol{\Sigma_{22}}
+\end{bmatrix}}^{\boldsymbol{\Sigma}}
+\right)
+$$
+\item Suppose we observe $\mathbf{X_1}$ and want to predict $\mathbf{X_2}$.
+\vskip2em
+\item \[ \mathbf{X_2}|\mathbf{X_1}\sim MN(\boldsymbol{\mu_2}+\boldsymbol{\Sigma_{21}}
+{\color{red} \boldsymbol{\Sigma_{11}}^{-1}}
+(\mathbf{X_1}-\boldsymbol{\mu_1}), \boldsymbol{\Sigma_{22}}-\boldsymbol{\Sigma_{21}}
+{\color{red} \boldsymbol{\Sigma_{11}}^{-1}}
+\boldsymbol{\Sigma_{12}}) \]
+\end{itemize}
+\end{minipage}
+\ 
+\begin{minipage}{.75in}
+\vspace*{0in}
+\includegraphics[width=.5in]{../../../Current_talks/LKrigTalk/pix/DKrige.jpg} \\
+D. Krige
+\end{minipage}
+
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ \begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+ \frametitle{Computing these expressions}
+\bdot ${\color{red} \boldsymbol{\Sigma_{11} } }$ : 
+the covariance matrix for the observations.  \\
+If there are 1000 observations, this matrix is $1000 \times 1000$.  \\
+\Myspace
+\bdot To find MLEs also need the determinant of $\Sigma_{11}$.  \\
+\Myspace
+Computing expressions with {\color{red} $ \Sigma_{11}^{-1}$} and {\color{red} $ | \Sigma_{11}| $} grow as the cube of the number of observations. \\
+\Myspace
+\Myspace
+ Twice as many observations will take  $8= 2^3 $ times longer. 
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+ \frametitle{Its all about the Cholesky}
+ {\it For the linear algebra fans ... } \\
+ Spatial statistics computations make heavy use of the Cholesky decomposition.  \\
+\bdot  $A$ a positive definite, symmetric matrix \\
+{\it Cholesky decomposition} is  $A= LL\T$ where $L$  is a {\it lower triangular} matrix. \\
+\Myspace
+\bdot Compute  $\by \T A^{-1}  \by$  by 
+\[ \by \T A^{-1}  \by = \by \T (L L\T) ^{-1}  \by  = ( L ^{-1} \by) \T  (L ^{-1} \by)
+=  \bw \T \bw \]
+ $\bw$ {\it solves }  the linear system $L   \bw = \by $.  \\
+{\it Solving a  triangular system  is  very efficient.} \\
+\Myspace
+\bdot Compute determinant $A$. \[ |A| =  |L L\T | =  |L | | L\T | = |L|^2 \]
+The determinant of a  triangular matrix is the product of the diagonal elements. 
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{Sparse matrices}
+\bdot  $A$ is sparse if it has many zeros  \\
+  (Typically we want the number of non-zero elements to grow  linearly with the number of dimensions. ) \\
+  \Myspace
+  \bdot If $A$ is sparse to find  $Ax$  skip over the zero elements to speedup multiplication  \\
+    \Myspace
+ \bdot If $A$ is sparse  Cholesky decomposition can also be sparse this will speed up solving linear systems.
+
+\end{frame}  
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{More on Sparse matrices}
+ A banded matrix with its Cholesky decomposition   $A= LL^T$
+ {\small
+ \[   A= \left[
+     \begin{array}{rrrrr}
+      9 & -3 & 0& 0&0 \\
+       -3 &10&  -3& 0&0 \\
+       0&-3 &10&  -3& 0\\
+        0&0&-3 &10&  -3\\
+         0& 0&0&-3 &10\\
+         \end{array}
+         \right]
+         \mbox{ and }
+          L= \left[
+           \begin{array}{rrrrr}
+      3 & 0 & 0& 0&0 \\
+       -1 &3& 0& 0&0 \\
+       0&-1 &3& 0& 0\\
+        0&0&-1 &3& 0\\
+         0& 0&0&-1 &3\
+         \end{array}
+          \right]  
+     \]  
+     } % end font  
+     
+     
+\bdot With $L$ triangular and sparse very fast to  evaluate/ solve for  $L^{-1} x$. \\
+
+This means it is fast to evaluate. 
+\[ x^TA^{-1}x  = (L^{-1}x )^T L^{-1} x  \mbox{ and }  |A| = |L | |L^T| =  |L|^2 \] 
+
+     
+\end{frame}
+ 
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{More on Sparse matrices}     
+Order matters:
+{\small 
+\[
+A =  \left[ \begin{array}{rrrrr}
+      x & 0 & 0& 0 &x \\
+       0&x& 0& 0 & x \\
+       0&0&x& 0 & x\\
+        0&0&0 &x & x\\
+         x& x& x& x & x 
+         \end{array}
+          \right]
+           \mbox{ factors as  }
+           L=  \left[ 
+      \begin{array}{rrrrr}
+      x & 0 & 0& 0&0 \\
+       0&x& 0& 0&0 \\
+       0&0&x& 0& 0\\
+        0&0&0 &x& 0\\
+         x& x&x&x &x \
+         \end{array}
+          \right]       
+     \] 
+     But  
+     \[
+A =  \left[ \begin{array}{rrrrr}
+      x & x& x& x & x \\
+       x&x& 0& 0 & 0 \\
+       x&0&x& 0 & 0 \\
+        x&0&0 &x & 0 \\
+         x& 0& 0& 0 & x 
+         \end{array}
+          \right]
+           \mbox{ factors as  }
+           L=  \left[ 
+      \begin{array}{rrrrr}
+      x & 0 & 0& 0&0 \\
+       x&x& 0& 0&0 \\
+       x&x&x& 0& 0\\
+        x&x&x &x& 0\\
+         x& x&x&x &x \
+         \end{array}
+          \right]       
+     \] 
+
+}
+
+\bdot Permute rows and columns of $A$ to increase sparsity. \\
+E.g. {\color{blue} AMD } is an ordering  algorithm to find  approximate minimum degree of a sparse matrix 
+ \end{frame}
+ 
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{Our strategy} 
+
+  {\large Formulate statistical models for spatial data that lead to sparse linear algebra. }
+ 
+ \end{frame}
+
+%\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+% \frametitle{Dodging an inverse}
+ 
+% \end{frame}
+
+\section{Basis functions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{}
+{\huge  Part 2 Basis functions for curve fitting}
+\Myspace
+\hspace*{.25in} \includegraphics[width=1.25in]{pix/stone.jpg} 
+\ 
+\includegraphics[width=1in]{pix/weierstrauss.jpeg} \\
+\hspace*{.35in} M. Stone \hspace{.6in}  K. Weierstrauss \\
+\Myspace
+\Myspace
+
+\includegraphics[width=3in]{../../../Current_talks/LKrigTalk/pix/sandPile6.pdf}
+
+\end{frame}   %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{Representing a curve}
+Start with your favorite 
+$m$ basis functions $\{b_1(s), b_2(s), \ldots, b_m(s)\}$
+
+The curve  has the form 
+
+\Mycomment{
+\[{g}(s)=\sum_{k=1}^{m}b_{k}(s){c}_{k}\]}
+where
+${\bc}=({c}_1, \ldots, {c}_m)$ are the coefficients.
+\\
+\Myspace
+\bdot The basis functions are fixed \\
+\bdot Based on data  find the coefficients.  \\
+\bdot $m$ does not have to be the same as the number of observations. 
+\\
+\Myspace
+Many spatial statistics problems have this general form or can be approximated by it.
+
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{Example of basis functions}
+
+\includegraphics[height=2in]{/Users/nychka/Home/Current_talks/KAUST/pix/bumpShape.pdf}
+
+\bdot Build a basis by translating and scaling a bump shaped curve
+
+\bdot Not your usual sine/cosine or polynomials!
+
+\bdot Bsplines not required!
+
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+ \begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+ \frametitle{Two Bases}
+
+10 Functions: \\
+\includegraphics[height=1in]{/Users/nychka/Home/Current_talks/KAUST/pix/bumpBasisA.pdf} \\
+20 Functions: \\
+\includegraphics[height=1in]{/Users/nychka/Home/Current_talks/KAUST/pix/bumpBasisB.pdf}
+
+Use both together  ( $10+20 = 30$ functions) to represent two different scales of detail.
+
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+ \frametitle{In two dimensions}
+ \includegraphics[height=.75in]{/Users/nychka/Home/Current_talks/LKrigTalk/pix/sandPile8.pdf} \hspace{.5in}
+  \includegraphics[height=.75in]{/Users/nychka/Dropbox/Home/Teaching/ISIShortCourse/LargeSpatialData/pix/balls.jpg}
+ \\
+ Example of a 2-d bump   \hspace{1in} Lattice on a sphere  \\
+ 
+ \Myspace
+ \Myspace
+ Defining the bump
+ \[ b(\bs) =  \Phi( \| \bs - \bu \|/ \alpha )  \]
+ $\Phi$  a fixed bump shaped function, $\bu$ the knot, and $\alpha$ is a scale factor.  \\
+ 
+ \bdot    Gaussian,  $ \Phi(d) = e^{-d^2}$  \\
+% \bdot    Biweight,  $(1- d)^2 $   for $(d <1 )$  zero otherwise,   \\
+ \bdot    Wendland  (2,2),  \[ \Phi(d) = (1- d)^6 ( 35d^2 + 18d  +3)/ 3  \quad (d \le 1 )  \mbox{ zero otherwise }  \]  
+
+ \end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{
+Basis function matrix }
+
+The {\it basis matrix}: 
+\[X_{i,k} = b_k(\bs_i)\] 
+rows index locations, columns index the basis functions. \\
+\Myspace
+%$( \hat{g}(s_1), \hat{g}(s_2), \ldots, \hat{g}(s_n) )^T =X {\bc} $
+ and  so
+ 
+ \[\bg = X{\bc}  \]
+
+\bdot If  the basis functions have compact range then $X$ is sparse. \\
+\Myspace
+\bdot  If $X$ is sparse then so will  $X^TX$ .
+
+
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\section{Fixed Rank Kriging}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{}
+{\huge Part 3  Fixed Rank Kriging} \\
+\Myspace
+\includegraphics[width=1.5in]{pix/cressie.jpg}
+
+See: N. Cressie and G. Johannesson. (2008) 
+
+\end{frame} 
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{A model for the coefficients}
+{\large
+\[ g(s) =  \sum_k b_k(s) c_k  \mbox{ and }  \bc \sim N( 0, \Omega) \]
+\Myspace
+$g(s)$ is a now a spatial process because $\bc$ is a random vector.
+}
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{More about this random effects model}
+Suppose:  \\
+\Myspace
+\bdot Basis functions are bumps centered at the knots $u_1, u_2, \ldots u_m$  \\
+\Myspace
+\bdot Use a spatial covariance to model dependence among coefficients using knot locations. \\
+\Myspace
+\Mycomment{An Example of $\Omega$ } 
+\[ Cov( c_k, c_k ) = \Omega_{k,k} =  e^{ -| u_k - u_k |/ \alpha } \]
+
+\[ g(s) =  \sum_k b_k(s) c_k \]
+is now a {\it random} curve. 
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{The covariance function}
+
+Using linear statistics: 
+\[ Cov( g(s), g(s^{\prime} ) =  \sum_{j,k}  b_j(s) b_k(s^{\prime}) \Omega_{j,k} \]
+
+The covariance matrix for $g$ at the observations has the simple  formula  \\
+\[ X \Omega X\T \]
+
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{An example}
+Ten  Wendland basis function  scale of .4, exponential covariance with range .2. \\
+\Myspace
+\Myspace
+\begin{tabular}{ccc}
+Covariance of $\bc$ & Covariance of $g(s)$ & Precision of $\bc$ \\
+ \includegraphics[height=.75in]{pix/FRKCovCoef.pdf} & \includegraphics[height=.75in]{pix/FRKCovImage.pdf} &
+ \includegraphics[height=.75in]{pix/FRKPrecisionCoef.pdf} 
+ \end{tabular}\\
+Four slices of  the  $g(s)$ covariance matrix \\
+\includegraphics[height=1in]{pix/FRKCov.pdf}
+ \\
+Hard to the see the 10 RBFs!  Looks a lot like a Matern,  smoothness =1. 
+ 
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{Estimating the coefficients }
+\Mycomment{Basic idea: find $\bc$ given $\by$} \\
+\Myspace
+\Myspace
+Based on the multivariate normal or BLUE, 
+\[ \hat{{c}} = ( X^T X  +  \Omega^{-1} ) ^{-1} X^T \by \]
+or 
+\[  ( X^T X  +  \Omega^{-1} ) \hat{{c}} = X^T \by \]
+
+\bdot This is  fixed rank Kriging. \\
+\bdot  Also known as ridge regression estimate.  \\
+\Myspace
+\bdot Better to work directly with the inverse of $\Omega$,   $Q= \Omega^{-1}$ \\
+\Myspace   
+\bdot Compute using the Cholesky! \\
+\Myspace 
+{\color{red} If $X$ is sparse and $\Omega^{-1}$ is sparse then this is now a sparse linear
+ algebra problem.}
+
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Spatial Autoregressions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{}
+{\huge Part 4 \\
+ Spatial Autoregessions (SARs)}
+ \Myspace
+ \includegraphics[width=3in]{pix/orchard.jpg}
+
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{ SAR models for $\bc$}
+A 1-D case \\
+\Myspace
+\begin{minipage}{2in}
+ \Mycomment{Some coefficients:  } \\
+   \begin{tabular}{ccccccc}
+.& $c_{k-2}$&$c_{k-1}$ &  {\color{red4} $c_{k}$} &$c_{k+1}$ &$c_{k+2}$ &.\\
+\end{tabular}
+\end{minipage}
+\\
+\Myspace
+\begin{minipage}{2in}
+ \Mycomment{Some weights:  } \\
+   \begin{tabular}{ccccccc}
+0& 0 &$ -1$ &  {\color{red4} {\tt a}} & $-1$&0&0 \\
+\end{tabular}
+\end{minipage}
+\\
+\Myspace
+\Mycomment{A spatial autoregression:}  
+\\
+\[   {\color{red4} {\tt a}}  c_k  -  ( c_{k-1} + c_{k+1} )  = {\color{red4} {\tt a}}  c_k  -  c_{k-1} - c_{k+1}   =  e_k \]
+$ \{ e_k \}$  are iid $N(0,1) $ 
+\end{frame}
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{Combining coefficients}
+\[ B \bc = \be \]
+where $\be \sim N( 0, I) $
+\\
+$\bB$ a matrix where each row has 3 nonzero weights:  \\
+a  diagonal element, $a$ and  two  
+first order neighbors ($-1$).  
+\\
+\Myspace
+\bdot ${\color{red4}  {\tt a} }$ parameter needs to be greater than 2  \\
+\bdot  Precision matrix $Q =  B^T B $ , this is $\Omega^{-1}$! \\
+\bdot Covariance matrix for $\bc$ is  $ \Omega =  Q^{-1}  =  B^{-1} $ \\
+\bdot $B$ and $Q$ are sparse matrices.  \\
+\Myspace 
+NOTE: For practical use the variance  and correlation range of this process is related to $a$ and it is useful to normalize to a fixed variance. 
+\end{frame}
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{SAR in two dimensions}
+\begin{minipage}{2in}
+ \Mycomment{Some coefficients:  } \\
+ {\large
+   \begin{tabular}{ccccc}
+ .&.&.& .&.\\
+.&. & $c_{j-1,k}$ & . &.\\
+.&$c_{j,k-1}$ &  {\color{red4} $c_{j,k}$} & $c_{j, k+1}$&. \\
+.&.& $c_{j+1,k}$ & . &. \\ 
+ .&.&.&.&.\\
+\end{tabular}
+}
+\end{minipage}
+\hspace{.5in}
+\begin{minipage}{2in}
+ \Mycomment{Some weights:  } \\
+ {\large
+   \begin{tabular}{ccccc}
+ .&.&.& .&.\\
+.&. & -1 & . &.\\
+.&-1 &  {\color{red4} {\tt a}}  & -1&. \\
+.&.& -1 & . &. \\ 
+ .&.&.&.&.\\
+\end{tabular}
+}
+\end{minipage}
+\\
+\Myspace
+\bdot Same concept although indexing is more difficult \\
+\bdot  $B$ is a sparse matrix with  5 nonzero elements on each row.  \\
+\bdot $a$ must be greater than 4. 
+\end{frame}
+
+
+
+\section{LatticeKrig Model and Package}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{}
+{\huge Part 5 
+{\it LatticeKrig}
+ }\\
+ \Myspace
+ \includegraphics[width=3in]{pix/garden-lattice.jpeg}
+
+ 
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{LatticeKrig model}
+
+A  specific, Fixed Rank Kriging model 
+
+\begin{enumerate}
+ 
+\item  Basis functions at regular knots and compact support (zero beyond fixed range). 
+    Use the Wendland function. \includegraphics[height=.35in]{/Users/nychka/Home/Current_talks/LKrigTalk/pix/sandPile8.pdf} 
+      \\
+     \Myspace
+     \ 
+  
+\item Coefficients follow a SAR model \\
+-- for first or second order neighbors. 
+  {\tiny \begin{tabular}{ccccc}
+ .&.&.& .&.\\
+.&. & -1 & . &.\\
+.&-1 &  {\color{red4} {\tt a}}  & -1&. \\
+.&.& -1 & . &. \\ 
+ .&.&.&.&.\\
+\end{tabular}
+}
+  \\
+     \Myspace
+     \ 
+\item  $\hat{\bc}$ found by  Kriging   $( X^T X  +  \Omega^{-1} ) \hat{{c}} = X^T \by$
+
+\end{enumerate}
+\Myspace
+\Mycomment{Why all this trouble?} \\
+
+{\color{red} Basis functions and SAR model give sparse matrices} \\
+
+\end{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\frametitle{Some practical additions}
+
+The Lattice Krig model should give reasonable covariance functions and follow standard Kriging results.  \\
+\Myspace
+\bdot Add a linear function to the basis. \\
+\Myspace
+\bdot Add several different scales of basis functions  together to  approximate standard covariance functions.  \\
+\Myspace
+\bdot Normalize the SAR/basis functions to give a process with a unit variance  \\
+\Myspace
+\end{frame}%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\frametitle{}
+\Mycomment{Parameters in the model }
+ \[ \by_i = g( \bs_i) + \epsilon_i \]
+ \bdot $Var( g(\bs_i) ) = \sigma^2$\\
+ \bdot $Var( \epsilon_i ) = \tau^2$ \\
+ \Myspace 
+ \bdot {\color{red} $a$ } parameter in  the SAR   \\
+ \bdot  {\tt NC} Number of basis functions in each dimension \\
+ 
+ \bdot {\tt nlevel} Number of multiresolution levels.  \\
+ \bdot {\tt nu} Smoothness  \\
+ \Myspace
+ {\tt NC} chosen based on resolution of $g$ \\
+ {\tt nlevel} as large as possible ( $\sim$ 3). \\
+ {\tt nu} tracks the Matern interpretation, is hard to estimate  from data and is also specified. 
+%
+
+\end{frame}%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\section{Summary}
+
+
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{Summary}
+\begin{itemize}
+\item Standard Kriging model breaks down with large data. 
+\item An approximate model can be used based on basis functions and random coefficients
+\item Choosing compact basis functions and a SAR lead to sparse matrices and fast computation.
+\item The LatticeKrig model can be tuned to approximate standard Kriging results but for large data sets. 
+\end{itemize}
+\end{frame}%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame} %%%%%%%%%%%%%%%%%%%%%%%%%%
+\frametitle{Thanks!}
+\includegraphics[width=3in]{pix/flatirons.jpeg}
+\end{frame}
+
+\end{document}

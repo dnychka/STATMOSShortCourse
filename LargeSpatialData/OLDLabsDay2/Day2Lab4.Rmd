@@ -1,0 +1,89 @@
+---
+title: "Day 2 Lab  Part 4 "
+subtitle: "ISI Short Course | June 1-3"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width=5, fig.height=5, fig.align = "center")
+suppressMessages(library( LatticeKrig))
+```
+
+
+Fit ozone data with default choices. 
+```{r}
+data(ozone2)  
+x<-ozone2$lon.lat
+y<- ozone2$y[16,]
+# default a is a large correlation range. 
+obj<- LatticeKrig( x, y)
+#check the basis function size.
+obj$LKinfo
+```
+
+List out a summary of the fit and plot the fitted surface.
+
+
+```{r}
+summary(obj)$parameters
+surface( obj)
+points( x, pch=16, col="grey")
+US( add=TRUE, col="red4")
+```
+
+A more flexible way is specify the model first then call the fitting function. ** a.wght= 8 ** is closer to what was suggested by maximum likelihood.  
+
+```
+LKinfo<- LKrigSetup( x, NC=4, nlevel=3, a.wght=8,
+                     nu=1.0)
+LKinfo
+obj1<- LatticeKrig( x, y , LKinfo=LKinfo)
+```
+
+## OK finally a big spatial problem 
+
+Try this out on the larger CO2 data set.  Here we specify the a.wght parameter instead of estimating it. 
+
+```{r}
+library( tictoc)
+data( CO2)
+LKinfo<- LKrigSetup( CO2$lon.lat,
+                     NC=40, nlevel=3,
+                 a.wght = 4.1,
+                     nu = 1.0)
+LKinfo
+tic()
+obj2<- LatticeKrig(CO2$lon.lat,CO2$y, LKinfo=LKinfo)
+toc()
+(summary(obj2))$parameters
+# check out timing details
+obj2$timingLKrig
+```
+
+Plot the surface  on a 120X120 grid and add a world map
+
+```{r}
+library( scales)
+fitSurface<- predictSurface( obj2, nx=120, ny=120)
+image.plot( fitSurface, col=viridis(256))
+world( add=TRUE, col="magenta", lwd=.75)
+title("Predicted surface CO2")    
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

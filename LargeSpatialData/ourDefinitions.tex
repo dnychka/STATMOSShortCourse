@@ -1,0 +1,196 @@
+%\newtheorem{theorem}{Theorem}
+%\newtheorem{proposition}[theorem]{Proposition}
+%\newtheorem{lemma}[theorem]{Lemma}
+%\newtheorem{corollary}[theorem]{Corollary}
+%\newtheorem{definition}[theorem]{Definition}
+%\newtheorem{example}[theorem]{Example}
+%\newtheorem{assumption}[theorem]{Assumption}
+%\newtheorem{remark}[theorem]{Remark}
+%\DeclareMathOperator*{\argmin}{\arg\!\min}
+
+% defines spiffy box around examples
+
+\mdfdefinestyle{MyFrame}{%
+    linecolor=gray,
+    outerlinewidth=2pt,
+    roundcorner=20pt,
+    innertopmargin=\baselineskip,
+    innerbottommargin=\baselineskip,
+    innerrightmargin=20pt,
+    innerleftmargin=20pt,
+    backgroundcolor=white}
+    
+\newcommand{\bex}{
+\vspace*{20pt}
+ \begin{mdframed}[style=MyFrame] }
+\newcommand{\eex}{ \end{mdframed}
+\vspace*{20pt} }
+
+% a handy macro to make a boldfaced 1  for vectors 
+\newcommand{\ones}{\mbox{\boldmath $1$}}
+\newcommand{\bdot}{ {\Large {\color{darkgreen} $\bullet$} }  }
+
+\DeclareMathOperator*{\argmin}{\arg\!\min}
+
+\newcommand{\il}[1]{\begin{itemize}  #1 \end{itemize}}
+
+\newcommand{\T}{^{\rm T}}
+\newcommand{\Cov}{{\rm Cov}}
+\newcommand{\Cor}{{\rm Cor}}
+\newcommand{\Var}{{\rm Var}}
+\newcommand{\complex}{\mathbb{C}}
+\newcommand{\real}{\mathbb{R}}
+\newcommand{\integer}{\mathbb{Z}}
+\newcommand{\indicator}{\mathbbm{1}}
+\newcommand{\E}{\mathbb{E}}
+\def\T{^{\rm T}}
+\newcommand{\var}{var}
+\newcommand{\cov}{cov}
+\newcommand{\diag}{diag}
+\newcommand{\tr}{tr}
+\newcommand{\GP}{GP}
+\newcommand{\avg}{avg}
+\newcommand{\trace}{trace}
+\newcommand{\blockdiag}{blockdiag}
+\newcommand{\sign}{sign}
+\newcommand{\knots}{\mathcal{Q}}
+\newcommand{\grid}{\mathcal{G}}
+\newcommand{\knot}{\mathbf{q}}
+\newcommand{\likelihood}{\mathcal{L}}
+\newcommand{\matern}{\mathcal{M}}
+\newcommand{\node}{\mathcal{N}}
+\newcommand{\normal}{\mathcal{N}}
+\newcommand{\order}{\mathcal{O}}
+\newcommand{\modu}{\mathcal{T}}
+\renewcommand{\prec}{\bm{\Lambda}}
+\newcommand{\pprec}{\widetilde{\bm{\Lambda}}}
+\newcommand{\domain}{\mathcal{D}}
+\newcommand{\pp}{\omega}
+\newcommand{\locs}{\mathcal{S}}
+\newcommand{\sphere}{S}
+
+\newcommand{\ba}{\mathbf{a}}
+\newcommand{\bb}{\mathbf{b}}
+\newcommand{\bc}{\mathbf{c}}
+\newcommand{\bd}{\mathbf{d}}
+\newcommand{\be}{\mathbf{e}}
+\newcommand{\beff}{\mathbf{f}}
+\newcommand{\bbf}{\mathbf{f}}
+\newcommand{\bg}{\mathbf{g}}
+\newcommand{\bh}{\mathbf{h}}
+\newcommand{\bi}{\mathbf{i}}
+\newcommand{\bj}{\mathbf{j}}
+\newcommand{\bk}{\mathbf{k}}
+\newcommand{\bl}{\mathbf{l}}
+\newcommand{\bell}{\boldsymbol{\ell}}
+\newcommand{\bbm}{\mathbf{m}}
+\newcommand{\bn}{\mathbf{n}}
+\newcommand{\bo}{\mathbf{o}}
+\newcommand{\bp}{\mathbf{p}}
+\newcommand{\bq}{\mathbf{q}}
+\newcommand{\br}{\mathbf{r}}
+\newcommand{\bs}{\mathbf{s}}
+\newcommand{\bt}{\mathbf{t}}
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\bv}{\mathbf{v}}
+\newcommand{\bw}{\mathbf{w}}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bz}{\mathbf{z}}
+
+\newcommand{\vep}{\varepsilon}
+\newcommand{\vphi}{\varphi}
+
+\newcommand{\sI}{\mathscr{I}}
+\newcommand{\sR}{\mathscr{R}}
+\newcommand{\sP}{\mathscr{P}}
+
+\newcommand{\cD}{{\cal D}}
+\newcommand{\cH}{{\cal H}}
+\newcommand{\bA}{\mathbf{A}}
+\newcommand{\bB}{\mathbf{B}}
+\newcommand{\bC}{\mathbf{C}}
+\newcommand{\bD}{\mathbf{D}}
+\newcommand{\bG}{\mathbf{G}}
+\newcommand{\bH}{\mathbf{H}}
+\newcommand{\bI}{\mathbf{I}}
+\newcommand{\bK}{\mathbf{K}}
+\newcommand{\bL}{\mathbf{L}}
+\newcommand{\bM}{\mathbf{M}}
+\newcommand{\bP}{\mathbf{P}}
+\newcommand{\bQ}{\mathbf{Q}}
+\newcommand{\bR}{\mathbf{R}}
+\newcommand{\bS}{\mathbf{S}}
+\newcommand{\bT}{\mathbf{T}}
+\newcommand{\bU}{\mathbf{U}}
+\newcommand{\bV}{\mathbf{V}}
+\newcommand{\bW}{\mathbf{W}}
+\newcommand{\bX}{\mathbf{X}}
+\newcommand{\bY}{\mathbf{Y}}
+\newcommand{\bZ}{\mathbf{Z}}
+\newcommand{\bomega}{\boldsymbol{\omega}}
+\newcommand{\bbeta}{\boldsymbol{\beta}}
+\newcommand{\bepsilon}{\boldsymbol{\epsilon}}
+\newcommand{\bphi}{\boldsymbol{\phi}}
+\newcommand{\bPhi}{\boldsymbol{\Phi}}
+\newcommand{\blambda}{\boldsymbol{\lambda}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\bvep}{\boldsymbol{\varepsilon}}
+\newcommand{\bmu}{\boldsymbol{\mu}}
+\newcommand{\bnu}{\boldsymbol{\nu}}
+
+\newcommand{\bfzero}{\mathbf{0}}
+\newcommand{\bfalpha}{\bm{\alpha}}
+\newcommand{\bfgamma}{\bm{\gamma}}
+\newcommand{\bfmu}{\bm{\mu}}
+\newcommand{\bfxi}{\bm{\xi}}
+\newcommand{\bftheta}{\bm{\theta}}
+\newcommand{\bfeta}{\bm{\eta}}
+\newcommand{\bfnu}{\bm{\nu}}
+\newcommand{\bfrho}{\bm{\rho}}
+\newcommand{\bfdelta}{\bm{\delta}}
+\newcommand{\bfkappa}{\bm{\kappa}}
+\newcommand{\bfbeta}{\bm{\beta}}
+\newcommand{\bfepsilon}{\bm{\epsilon}}
+\newcommand{\bftau}{\bm{\tau}}
+\newcommand{\bfomega}{\bm{\omega}}
+\newcommand{\bfpi}{\bm{\pi}}
+\newcommand{\bfpsi}{\bm{\psi}}
+\newcommand{\bfSigma}{\bm{\Sigma}}
+\newcommand{\bfGamma}{\bm{\Gamma}}
+\newcommand{\bfLambda}{\bm{\Lambda}}
+\newcommand{\bfPsi}{\bm{\Psi}}
+\newcommand{\bfOmega}{\bm{\Omega}}
+
+\newcommand{\im}{{i_1,\ldots,i_m}}
+\newcommand{\jm}{{j_1,\ldots,j_m}}
+\newcommand{\jmp}{{j_1,\ldots,j_{m+1}}}
+\newcommand{\jmm}{{j_1,\ldots,j_{m-1}}}
+\newcommand{\jk}{{j_1,\ldots,j_k}}
+\newcommand{\jl}{{j_1,\ldots,j_l}}
+\newcommand{\jlp}{{j_1,\ldots,j_{l+1}}}
+\newcommand{\jM}{{j_1,\ldots,j_M}}
+
+\newcommand{\evol}{\mathcal{E}}
+\newcommand{\levol}{\mathbf{E}}
+
+\newcommand{\xp}{\mathbf{\widetilde{x}}} 
+\newcommand{\yp}{\mathbf{\widetilde{y}}}
+\newcommand{\xf}{\mathbf{\widehat{x}}}
+\newcommand{\yf}{\mathbf{\widehat{y}}}
+
+\newcommand{\Lp}{\mathbf{\widetilde{L}}}  
+\newcommand{\Lf}{\mathbf{\widehat{L}}}  
+\newcommand{\Sp}{\mathbf{\widetilde{S}}}  
+\newcommand{\Sf}{\mathbf{\widehat{S}}}  
+
+\newcommand{\ap}{\bm{\widetilde{\mu}}}     
+\newcommand{\Pp}{\bm{\widetilde{\Sigma}}}  
+\newcommand{\af}{\bm{\widehat{\mu}}}     
+\newcommand{\Pf}{\bm{\widehat{\Sigma}}}  
+
+
+\newcommand{\kronecker}{\raisebox{1pt}{\ensuremath{\:\otimes\:}}}
+
+\newcommand{\bzero}{\boldsymbol{0}}
+\newcommand{\bone}{\boldsymbol{1}}

@@ -1,0 +1,113 @@
+---
+title: "Lab  Part 0"
+subtitle: " Short Course"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width=5, fig.height=5, fig.align = "center")
+suppressMessages(library( LatticeKrig))
+```
+
+# Timing   the **spatialProcess** function 
+Motivation for problems as problem size gets large 
+
+Note: loading **LatticeKrig** package automatically loads **fields**. 
+```{r}
+set.seed(222)
+tabSP<- NULL
+nObs<- 
+  c(sizes<- c(100, 200, 400,  500, 750, 1000, 2000, 3000) 
+for( n in nObs ){
+  x<- cbind( seq( 0,1,,n))
+  Sigma<- Matern( rdist(x,x)/.15, smoothness = 1.0)
+  U<- rnorm(n)
+  E<- rnorm(n)
+# add in a linear part too to match fitting  
+  y<-   (1 + x) + t(chol(Sigma))%*%U  + .05*E 
+  # fix the range to compare with example later on 
+  elapsedTime<- system.time( 
+              out<- spatialProcess( x,y, aRange=.15 )
+        )
+  #print(c( n,elapsedTime[3]) )
+  tabSP<-  rbind( tabSP, c( n,elapsedTime[3]) )
+}
+
+print( tabSP)
+  
+```
+Take a look at a log-log plot. Linear in log-log means a polynomial relationship. 
+
+```{r}
+plot( tabSP, log="xy", xlab="n", ylab="time (seconds)",
+        col="grey", pch=16)
+
+y<- log10(tabSP[,2])
+x<- log10(tabSP[,1])
+lm( y~x)
+```
+
+\newpage
+
+# Timing  just the Cholesky
+Focusing just on the Cholesky decoposition -- theoretically the most time consuming step.
+Use a test matrix that has lots of zeroes and compare timing  to sparse Cholesky
+decomposition.
+
+```{r}
+sizes<- c(100, 200, 400,  500, 750, 1000, 2000, 3000, 4000, 5000, 8000, 10000)
+NTotal<- length( sizes)
+tabChol<- matrix( NA, nrow= NTotal, ncol=4)
+dimnames(tabChol)<- list( NULL, c("N","Dense",
+                              "Sparse","speedup"))
+for(k in 1:NTotal) {
+ N<- sizes[k]
+#weights are a 4th differece 
+# sparse matrix construction using LatticeKrig utility
+SMat <- LKDiag( c(1,  -10,   27,  -10,    1), N)
+# convert to full ( now the zeroes are consider real values)
+FMat <- spam2full(SMat)
+# dense matrix Cholesky
+startTime <- Sys.time() #
+FChol <- chol(FMat)
+deltaF<- as.numeric(Sys.time() - startTime) #
+# sparse matrix Cholesky
+startTime <- Sys.time()
+SChol <- chol(SMat)
+deltaS<- as.numeric(Sys.time() - startTime )
+tabChol[k,]<- c(N,deltaF, deltaS, deltaF/deltaS )
+}
+print( tabChol)
+```
+Log- log plot to look for polynomial dependence
+
+```{r}
+matplot( tabChol[,1], tabChol[,2:3], type="p", pch=c( "D","S"),
+xlab="N", ylab="time (sec)", log="xy")
+title("Cholesky timing dense (D) vs sparse (S)
+      for matrix with 2 off-diagonal  bands ")
+```
+\newpage
+
+# On your own ...
+
+1. Extrapolating from the smaller sample results  in **tabS** estimate the time for
+**spatialProcess** to
+handle a problem of size 26000 ( about the size of the CO2 data set.)
+
+2. Is the time for spatialProcess ( **tabSP[,2]**) linearly related to the time for the  Cholesky decomposition ( **tabChol[1:6, 2]**)?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
